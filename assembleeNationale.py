@@ -46,7 +46,7 @@ if args.groupe:
 
 
 if args.departement:
-    resultat = resultat[resultat["departementNom"].str.contains(args.departement, case=False, na=False)]
+    resultat = resultat[resultat["departementNom"] == args.departement]
 
 if args.circo:
     resultat = resultat[resultat["circo"] == args.circo]
