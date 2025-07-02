@@ -37,7 +37,7 @@ if args.communes:
         print(f"Commune {args.communes} => Département : {dep}, Circonscription : {circo}")
     else:
         print(f"Commune {nom_commune} non trouvée")
-    resultat = resultat[resultat['departementNom'].str.contains(lookupDep, case=False, na=False)]
+    resultat = resultat[resultat['departementNom'] == lookupDep]
     resultat = resultat[resultat['circo'] == lookupCirco]
 
 if args.groupe:
