@@ -31,9 +31,13 @@ flagD = False
 flagC = False
 
 if args.codeDepartement:
-    ligne = dfCirco[dfCirco['DEP'].str.lower() == str(args.codeDepartement)]
-    if not ligne.empty:
-        pass
+    code_dep = str(args.codeDepartement)
+    nom_depa = dfCirco[dfCirco['DEP'] == code_dep]['libdep'].unique()
+    if len(nom_depa) == 0:
+        print(f'Aucun departement trouve pour le code {code_dep}')
+        sys.exit(0)
+    print(nom_depa[0])
+    resultat = resultat[resultat['departementNom'] == nom_depa[0]]
 
 
 if args.communes:
