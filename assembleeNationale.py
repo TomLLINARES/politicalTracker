@@ -87,6 +87,10 @@ if args.visual:
     plt.show()
     sys.exit(0)
 
+if args.nom:
+    resultat = resultat[resultat['nom'].str.contains(args.nom)]
+
+
 if resultat.empty:
     print("Aucun député trouvé avec ces critères.")
 else:
