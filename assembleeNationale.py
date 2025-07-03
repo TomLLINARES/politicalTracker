@@ -14,10 +14,13 @@ dfCirco = pd.read_excel(addr_corr, sheet_name='table')  # ou nom de la feuille
 parser = argparse.ArgumentParser(description="Filtrer les députés par groupe, département ou circonscription.")
 parser.add_argument("-g", "--groupe", help="Sigle du groupe parlementaire (ex: LFI-NFP, RN, DR...)")
 parser.add_argument("-d", "--departement", help="Nom complet du département (ex: Yvelines)")
-parser.add_argument("-c", "--circo", type=int, help="Numéro de la circonscription dans le département")
+parser.add_argument("-ci", "--circo", type=int, help="Numéro de la circonscription dans le département")
 parser.add_argument("-v", "--visual", action="store_true", help="Affiche un graphique de la repartition en fonction du critere choisi")
 parser.add_argument("-n", "--nom", type=str, help="Recherche un depute par son nom")
-parser.add_argument("-C", "--communes", type=str, help="entrez le nom de votre commune")
+parser.add_argument("-co", "--communes", type=str, help="entrez le nom de votre commune")
+parser.add_argument("-cp", "--codePostal", type=int, help="entrez le code postal de votre commune")
+parser.add_argument("-cd", "--codeDepartement", type=int, help="entrez le numéro de votre département") #colonne DEP (code departement)
+
 
 args = parser.parse_args()
 resultat = df.copy()
@@ -27,23 +30,42 @@ lookupDep = ''
 flagD = False
 flagC = False
 
-if args.communes:
-    ligne = dfCirco[dfCirco['LIBcom'].str.lower() == args.communes.lower()]
+if args.codeDepartement:
+    ligne = dfCirco[dfCirco['DEP'].str.lower() == str(args.codeDepartement)]
     if not ligne.empty:
-        circo = ligne['circo'].values[0]
-        dep = ligne['libdep'].values[0]
-        lookupCirco, lookupDep = int((circo)[3:]), str(dep)
-        flagD, flagC = True, True
-        print(f"Commune {args.communes} => Département : {dep}, Circonscription : {circo}")
-    else:
-        print(f"Commune {nom_commune} non trouvée")
-    resultat = resultat[resultat['departementNom'] == lookupDep]
-    resultat = resultat[resultat['circo'] == lookupCirco]
+        pass
+
+
+if args.communes:
+    communeA = args.communes.lower()
+    if communeA == 'paris':
+        resultat = df[df['departementNom'].str.lower() == 'paris']
+    elif communeA in ['marseille', 'lyon']:
+        matching = dfCirco[dfCirco['LIBcom'].str.lower() == 'lyon']
+        if matching.empty:
+            print(f'Aucune correspondance trouvée pour {communeA}')
+        else:
+            resultat = pd.DataFrame()
+            for _, row in matching.iterrows():
+                dept_nom = row['libdep']
+                circoNum = int(str(row['circo'][3:]))
+                filtre = ((df['departementNom'].str.lower() == dept_nom.lower()) & (df['circo'] == circoNum))
+                resultat=pd.concat([resultat, df[filtre]])
+    else:    
+        ligne = dfCirco[dfCirco['LIBcom'].str.lower() == args.communes.lower()]
+        if not ligne.empty:
+            circo = ligne['circo'].values[0]
+            dep = ligne['libdep'].values[0]
+            lookupCirco, lookupDep = int((circo)[3:]), str(dep)
+            flagD, flagC = True, True
+            print(f"Commune {args.communes} => Département : {dep}, Circonscription : {circo}")
+        else:
+            print(f"Commune {nom_commune} non trouvée")
+        resultat = resultat[resultat['departementNom'] == lookupDep]
+        resultat = resultat[resultat['circo'] == lookupCirco]
 
 if args.groupe:
     resultat = resultat[resultat["groupeAbrev"] == args.groupe]
-
-
 
 if args.departement:
     resultat = resultat[resultat["departementNom"] == args.departement]
